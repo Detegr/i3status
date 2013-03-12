@@ -278,6 +278,9 @@ int main(int argc, char *argv[]) {
 
         cfg_opt_t disk_opts[] = {
                 CFG_STR("format", "%free", CFGF_NONE),
+                CFG_INT("full_threshold", 0, CFGF_NONE),
+                CFG_INT("half_threshold", 0, CFGF_NONE),
+                CFG_CUSTOM_COLOR_OPTS,
                 CFG_END()
         };
 
@@ -457,7 +460,7 @@ int main(int argc, char *argv[]) {
 
                         CASE_SEC_TITLE("disk") {
                                 SEC_OPEN_MAP("disk_info");
-                                print_disk_info(json_gen, buffer, title, cfg_getstr(sec, "format"));
+                                print_disk_info(json_gen, buffer, title, cfg_getstr(sec, "format"), cfg_getint(sec, "half_threshold"), cfg_getint(sec, "full_threshold"));
                                 SEC_CLOSE_MAP;
                         }
 

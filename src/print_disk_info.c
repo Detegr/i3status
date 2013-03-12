@@ -43,9 +43,11 @@ static int print_bytes_human(char *outwalk, uint64_t bytes) {
  * human readable manner.
  *
  */
-void print_disk_info(yajl_gen json_gen, char *buffer, const char *path, const char *format) {
+void print_disk_info(yajl_gen json_gen, char *buffer, const char *path, const char *format, const int half_threshold, const int full_threshold) {
         const char *walk;
         char *outwalk = buffer;
+        double usage=0;
+	bool colorful_output = half_threshold>0 || full_threshold>0;
 
         INSTANCE(path);
 
@@ -60,6 +62,16 @@ void print_disk_info(yajl_gen json_gen, char *buffer, const char *path, const ch
         if (statvfs(path, &buf) == -1)
                 return;
 #endif
+
+	if (colorful_output) {
+		usage=100.0 * (double)(buf.f_blocks - buf.f_bfree) / (double)buf.f_blocks;
+		if(usage>full_threshold) {
+			START_COLOR("color_bad");
+		}
+		else if(usage > half_threshold) {
+			START_COLOR("color_degraded");
+		}
+	}
 
         for (walk = format; *walk != '\0'; walk++) {
                 if (*walk != '%') {
@@ -107,6 +119,10 @@ void print_disk_info(yajl_gen json_gen, char *buffer, const char *path, const ch
                         walk += strlen("percentage_avail");
                 }
         }
+
+	if(colorful_output) {
+		END_COLOR;
+	}
 
         *outwalk = '\0';
         OUTPUT_FULL_TEXT(buffer);
